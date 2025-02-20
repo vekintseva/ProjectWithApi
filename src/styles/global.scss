@@ -1,0 +1,42 @@
+// Глобальные стили
+body {
+    margin: 0;
+    padding: 0;
+    font-family: Arial, sans-serif;
+    background-color: #1a5e4786;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+  }
+  
+  // Центрирование содержимого
+  .app-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 100%;
+    height: 100%;
+  }
+  
+  // Прямоугольник для содержимого
+  .content-box {
+    background-color: #d4ceaf;
+    border-radius: 10px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    padding: 20px;
+    width: 400px;
+    max-width: 90%;
+    text-align: center;
+  }
+
+  // Переопределение стилей Ant Design кнопки
+.ant-btn-primary {
+    background-color: #1b6452;
+    border-color: #09352b;
+  }
+  
+  .ant-btn-primary:hover {
+    background-color: #0f2c1c; 
+    border-color: #000000;
+  }
