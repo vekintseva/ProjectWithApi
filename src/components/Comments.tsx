@@ -1,39 +1,47 @@
-import { useEffect, useState } from "react";
+import React, { useEffect, useState } from "react";
+import { List, Typography } from "antd";
 import axios from "axios";
+import { Comment } from "../types/comments.types";
 
-interface Comment {
-  id: number;
-  name: string;
-  body: string;
+interface CommentsProps {
+  postId: number | null;
 }
 
-const Comments = ({ postId }: { postId: number }) => {
+export const Comments: React.FC<CommentsProps> = ({ postId }) => {
   const [comments, setComments] = useState<Comment[]>([]);
 
   useEffect(() => {
+    if (!postId) return;
+
     const fetchComments = async () => {
-      const response = await axios.get(
-        `https://jsonplaceholder.typicode.com/posts/${postId}/comments`
-      );
-      setComments(response.data);
+      try {
+        const response = await axios.get<Comment[]>(
+          `https://jsonplaceholder.typicode.com/comments?postId=${postId}`
+        );
+        setComments(response.data);
+      } catch (error) {
+        console.error("Ошибка при загрузке комментариев:", error);
+      }
     };
 
     fetchComments();
   }, [postId]);
 
   return (
-    <div>
-      <h2>Comments</h2>
-      <ul>
-        {comments.map((comment) => (
-          <li key={comment.id}>
-            <strong>{comment.name}</strong>
-            <p>{comment.body}</p>
-          </li>
-        ))}
-      </ul>
-    </div>
+    <>
+      <Typography.Title level={5}>Комментарии:</Typography.Title>
+      <List
+        bordered
+        dataSource={comments}
+        renderItem={(comment) => (
+          <List.Item>
+            <List.Item.Meta
+              title={`${comment.name} (${comment.email})`}
+              description={comment.body}
+            />
+          </List.Item>
+        )}
+      />
+    </>
   );
 };
-
-export default Comments;

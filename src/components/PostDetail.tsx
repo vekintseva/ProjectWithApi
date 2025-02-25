@@ -1,21 +1,35 @@
-import { useParams } from "react-router-dom";
-import { useSelector } from "react-redux";
-import { RootState } from "../store/store";
+import React from "react";
+import { Modal, Button, Typography } from "antd";
+import { Post } from "../types/posts.types";
+import { Comments } from "./Comments";
 
-const PostDetails = () => {
-  const { id } = useParams<{ id: string }>();
-  const post = useSelector((state: RootState) =>
-    state.posts.posts.find((p) => p.id === Number(id))
-  );
+interface PostDetailProps {
+  isOpen: boolean;
+  post: Post | null;
+  onClose: () => void;
+}
 
-  if (!post) return <p>Post not found</p>;
-
+export const PostDetail: React.FC<PostDetailProps> = ({
+  isOpen,
+  post,
+  onClose,
+}) => {
   return (
-    <div>
-      <h1>{post.title}</h1>
-      <p>{post.body}</p>
-    </div>
+    <Modal
+      title={post?.title}
+      open={isOpen}
+      onCancel={onClose}
+      footer={[
+        <Button key="close" onClick={onClose}>
+          Закрыть
+        </Button>,
+      ]}
+    >
+      <>
+        <Typography.Title level={5}>Описание:</Typography.Title>
+        {post?.body}
+        {post && <Comments postId={post.id} />}
+      </>
+    </Modal>
   );
 };
-
-export default PostDetails;

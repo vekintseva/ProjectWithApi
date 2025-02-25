@@ -1,52 +1,6 @@
-// import { createSlice, PayloadAction } from "@reduxjs/toolkit";
-
-// export interface Post {
-//   id: number;
-//   title: string;
-//   body: string;
-// }
-
-// interface PostsState {
-//   posts: Post[];
-// }
-
-// const initialState: PostsState = {
-//   posts: [],
-// };
-
-// const postsSlice = createSlice({
-//   name: "posts",
-//   initialState,
-//   reducers: {
-//     setPosts(state, action: PayloadAction<Post[]>) {
-//       state.posts = action.payload;
-//     },
-//     addPost(state, action: PayloadAction<Post>) {
-//       state.posts.push(action.payload);
-//     },
-//     deletePost(state, action: PayloadAction<number>) {
-//       state.posts = state.posts.filter((post) => post.id !== action.payload);
-//     },
-//   },
-// });
-
-// export const { setPosts, addPost, deletePost } = postsSlice.actions;
-// export default postsSlice.reducer;
-
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
 import axios from "axios";
-
-export interface Post {
-  id: number;
-  title: string;
-  body: string;
-}
-
-interface PostsState {
-  posts: Post[];
-  loading: boolean;
-  error: string | null;
-}
+import { PostsState, Post } from "../types/posts.types";
 
 const initialState: PostsState = {
   posts: [],
@@ -54,23 +8,28 @@ const initialState: PostsState = {
   error: null,
 };
 
-// Асинхронное действие для получения постов
+const API_URL = "https://jsonplaceholder.typicode.com";
+
 export const fetchPosts = createAsyncThunk("posts/fetchPosts", async () => {
-  const response = await axios.get("https://jsonplaceholder.typicode.com/posts");
+  const response = await axios.get(`${API_URL}/posts`);
   return response.data;
 });
 
-// Асинхронное действие для добавления поста
-export const addPost = createAsyncThunk("posts/addPost", async (newPost: Omit<Post, "id">) => {
-  const response = await axios.post("https://jsonplaceholder.typicode.com/posts", newPost);
-  return response.data;
-});
+export const addPost = createAsyncThunk(
+  "posts/addPost",
+  async (newPost: Omit<Post, "id">) => {
+    const response = await axios.post(`${API_URL}/posts`, newPost);
+    return response.data;
+  }
+);
 
-// Асинхронное действие для удаления поста
-export const deletePost = createAsyncThunk("posts/deletePost", async (id: number) => {
-  await axios.delete(`https://jsonplaceholder.typicode.com/posts/${id}`);
-  return id;
-});
+export const deletePost = createAsyncThunk(
+  "posts/deletePost",
+  async (id: number) => {
+    await axios.delete(`${API_URL}/posts/${id}`);
+    return id;
+  }
+);
 
 const postsSlice = createSlice({
   name: "posts",

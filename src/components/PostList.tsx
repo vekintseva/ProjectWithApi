@@ -1,73 +1,71 @@
-// import React, { useEffect } from "react";
-// import { useDispatch, useSelector } from "react-redux";
-// import { RootState, AppDispatch } from "../store/store";
-// import { deletePost, setPosts } from "../store/postsSlice";
-// import axios from "axios";
-// import { Link } from "react-router-dom";
+import React, { useEffect, useState } from "react";
+import { useDispatch, useSelector } from "react-redux";
+import { fetchPosts, deletePost } from "../store/postsSlice";
+import { AppDispatch, RootState } from "../store/store";
+import { Button, Flex, List } from "antd";
+import { PostDetail } from "./PostDetail";
+import { useNavigate } from "react-router-dom";
+import { Post } from "../types/posts.types";
 
-// const PostList = () => {
-//   const dispatch = useDispatch<AppDispatch>();
-//   const posts = useSelector((state: RootState) => state.posts.posts);
-
-//   useEffect(() => {
-//     const fetchPosts = async () => {
-//       const response = await axios.get("https://jsonplaceholder.typicode.com/posts");
-//       dispatch(setPosts(response.data));
-//     };
-
-//     fetchPosts();
-//   }, [dispatch]);
-
-//   return (
-//     <div>
-//       <h1>Posts</h1>
-//       <ul>
-//     {posts.map((post) => (
-//     <li key={post.id}>
-//       <Link to={`/posts/${post.id}`}>{post.title}</Link>
-//       <button onClick={() => dispatch(deletePost(post.id))}>Delete</button>
-//     </li>
-//   ))}
-// </ul>
-//     </div>
-//   );
-// };
-
-// export default PostList;
-import  { useEffect } from 'react';
-import { useDispatch, useSelector } from 'react-redux';
-import { List, Button } from 'antd';
-import { fetchPosts, deletePost } from '../store/postsSlice';
-import { RootState, AppDispatch } from '../store/store';
-
-const PostList = () => {
+export const PostList: React.FC = () => {
   const dispatch = useDispatch<AppDispatch>();
-  const { posts, loading, error } = useSelector((state: RootState) => state.posts);
+  const { posts } = useSelector((state: RootState) => state.posts);
 
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [selectedPost, setSelectedPost] = useState<Post | null>(null);
   useEffect(() => {
     dispatch(fetchPosts());
   }, [dispatch]);
 
-  if (loading) return <p>Loading...</p>;
-  if (error) return <p>Error: {error}</p>;
+  const navigate = useNavigate();
+  const handleShowAddForm = () => {
+    navigate("/");
+  };
+
+  const handleOpenModal = async (post: Post) => {
+    setSelectedPost(post);
+    setIsModalOpen(true);
+  };
+
+  const handleCloseModal = () => {
+    setIsModalOpen(false);
+    setSelectedPost(null);
+  };
 
   return (
-    <List
-      bordered
-      dataSource={posts}
-      renderItem={(post) => (
-        <List.Item
-          actions={[
-            <Button danger onClick={() => dispatch(deletePost(post.id))}>
-              Delete
-            </Button>,
-          ]}
-        >
-          <List.Item.Meta title={post.title} description={post.body} />
-        </List.Item>
-      )}
-    />
+    <Flex vertical gap={6}>
+      <div
+        className="content-box"
+        style={{ maxHeight: "80vh", overflow: "auto" }}
+      >
+        <List
+          bordered
+          dataSource={posts}
+          renderItem={(post) => (
+            <List.Item
+              actions={[
+                <Button danger onClick={() => dispatch(deletePost(post.id))}>
+                  Delete
+                </Button>,
+                <Button type="primary" onClick={() => handleOpenModal(post)}>
+                  Подробнее
+                </Button>,
+              ]}
+            >
+              <List.Item.Meta title={post.title} description={post.body} />
+            </List.Item>
+          )}
+        />
+
+        <PostDetail
+          isOpen={isModalOpen}
+          post={selectedPost}
+          onClose={handleCloseModal}
+        />
+      </div>
+      <Button type="primary" onClick={handleShowAddForm}>
+        Вернуться к форме создания поста
+      </Button>
+    </Flex>
   );
 };
-
-export default PostList;

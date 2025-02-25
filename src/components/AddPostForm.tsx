@@ -1,67 +1,35 @@
-// import React, { useState } from "react";
-// import { useDispatch } from "react-redux";
-// import { AppDispatch } from "../store/store";
-// import { addPost } from "../store/postsSlice";
+import React from "react";
+import { Form, Input, Button, notification } from "antd";
+import { useDispatch } from "react-redux";
+import { AppDispatch } from "../store/store";
+import { addPost } from "../store/postsSlice";
 
-// const AddPostForm = () => {
-//   const dispatch = useDispatch<AppDispatch>();
-//   const [title, setTitle] = useState("");
-//   const [body, setBody] = useState("");
-
-//   const handleSubmit = (e: React.FormEvent) => {
-//     e.preventDefault();
-//     const newPost = {
-//       id: Date.now(),
-//       title,
-//       body,
-//     };
-//     dispatch(addPost(newPost));
-//     setTitle("");
-//     setBody("");
-//   };
-
-//   return (
-//     <form onSubmit={handleSubmit}>
-//       <h2>Тут можно добавить пост</h2>
-//       <input
-//         type="text"
-//         placeholder="Title"
-//         value={title}
-//         onChange={(e) => setTitle(e.target.value)}
-//       />
-//       <textarea
-//         placeholder="Body"
-//         value={body}
-//         onChange={(e) => setBody(e.target.value)}
-//       />
-//       <button type="submit">Добавить</button>
-//     </form>
-//   );
-// };
-
-// export default AddPostForm;
-
-import { useDispatch } from 'react-redux';
-import { Input, Button, Form } from 'antd';
-import { AppDispatch } from '../store/store';
-import { addPost } from '../store/postsSlice';
-
-const AddPostForm = () => {
+export const AddPostForm: React.FC = () => {
   const dispatch = useDispatch<AppDispatch>();
-  const [form] = Form.useForm();
 
   const handleSubmit = (values: { title: string; body: string }) => {
-    dispatch(addPost(values));
-    form.resetFields();
+    const newPost = {
+      userId: 1,
+      id: Date.now(),
+      title: values.title,
+      body: values.body,
+    };
+    dispatch(addPost(newPost));
+
+    notification.success({
+      message: "Пост добавлен",
+      description: `пост "${values.title}" добавлен, но пока непонятно куда:)`,
+      placement: "topRight",
+    });
   };
 
   return (
-    <Form form={form} onFinish={handleSubmit} layout="vertical">
-      <Form.Item name="title" label="Название" rules={[{ required: true, message: 'Please enter a title' }]}>
-        <Input placeholder="Введите название поста" />
+    <Form onFinish={handleSubmit} layout="vertical">
+      <Form.Item name="title" label="Название" rules={[{ required: true }]}>
+        <Input placeholder="Введите название для поста" />
       </Form.Item>
-      <Form.Item name="body" label="Содержание" rules={[{ required: true, message: 'Please enter text to the post' }]}>
-        <Input.TextArea placeholder="Введите содержание поста" />
+      <Form.Item name="body" label="Описание" rules={[{ required: true }]}>
+        <Input.TextArea placeholder="Введите описание поста" />
       </Form.Item>
       <Button type="primary" htmlType="submit">
         Добавить пост
@@ -69,5 +37,3 @@ const AddPostForm = () => {
     </Form>
   );
 };
-
-export default AddPostForm;
