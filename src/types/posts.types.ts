@@ -8,4 +8,5 @@ export interface PostsState {
   posts: Post[];
   loading: boolean;
   error: string | null;
+  newPost: Post | null;
 }
