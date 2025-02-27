@@ -1,28 +1,32 @@
 import React, { useEffect, useState } from "react";
-import { useDispatch, useSelector } from "react-redux";
-import { fetchPosts, deletePost } from "../store/postsSlice";
-import { AppDispatch, RootState } from "../store/store";
 import { Button, Flex, List } from "antd";
 import { PostDetail } from "./PostDetail";
-import { useNavigate } from "react-router-dom";
 import { Post } from "../types/posts.types";
-
+import { AddPostForm } from "./AddPostForm";
+import { useGetPostsQuery } from "../store/postsSlice";
 export const PostList: React.FC = () => {
-  const dispatch = useDispatch<AppDispatch>();
-  const { posts } = useSelector((state: RootState) => state.posts);
-
+  const [posts, setPosts] = useState<Post[]>([]);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedPost, setSelectedPost] = useState<Post | null>(null);
-  useEffect(() => {
-    dispatch(fetchPosts());
-  }, [dispatch]);
+  const [isAddFormOpen, setIsAddFormOpen] = useState(false);
 
-  const navigate = useNavigate();
+  const { data } = useGetPostsQuery();
+
+  useEffect(() => {
+    const storedPosts = localStorage.getItem("posts");
+    if (storedPosts) {
+      setPosts(JSON.parse(storedPosts));
+    } else if (data) {
+      setPosts(data);
+      localStorage.setItem("posts", JSON.stringify(data));
+    }
+  }, [data]);
+
   const handleShowAddForm = () => {
-    navigate("/");
+    setIsAddFormOpen(true);
   };
 
-  const handleOpenModal = async (post: Post) => {
+  const handleOpenModal = (post: Post) => {
     setSelectedPost(post);
     setIsModalOpen(true);
   };
@@ -30,6 +34,30 @@ export const PostList: React.FC = () => {
   const handleCloseModal = () => {
     setIsModalOpen(false);
     setSelectedPost(null);
+  };
+
+  const handleDeletePost = (id: number) => {
+    setPosts(posts.filter((post) => post.id !== id));
+    localStorage.setItem(
+      "posts",
+      JSON.stringify(posts.filter((post) => post.id !== id))
+    );
+  };
+
+  const handleAddPost = (values: { title: string; body: string }) => {
+    const newPost: Post = {
+      id: posts.length + 1,
+      title: values.title,
+      body: values.body,
+    };
+    const updatedPosts = [...posts, newPost];
+    setPosts(updatedPosts);
+    localStorage.setItem("posts", JSON.stringify(updatedPosts));
+    setIsAddFormOpen(false);
+  };
+
+  const handleCloseAddForm = () => {
+    setIsAddFormOpen(false);
   };
 
   return (
@@ -44,7 +72,7 @@ export const PostList: React.FC = () => {
           renderItem={(post) => (
             <List.Item
               actions={[
-                <Button danger onClick={() => dispatch(deletePost(post.id))}>
+                <Button danger onClick={() => handleDeletePost(post.id)}>
                   Delete
                 </Button>,
                 <Button type="primary" onClick={() => handleOpenModal(post)}>
@@ -63,9 +91,18 @@ export const PostList: React.FC = () => {
           onClose={handleCloseModal}
         />
       </div>
-      <Button type="primary" onClick={handleShowAddForm}>
-        Вернуться к форме создания поста
-      </Button>
+      {isAddFormOpen && (
+        <AddPostForm
+          visible={isAddFormOpen}
+          onAddPost={handleAddPost}
+          onClose={handleCloseAddForm}
+        />
+      )}
+      {!isAddFormOpen && (
+        <Button type="primary" onClick={handleShowAddForm}>
+          Добавить пост
+        </Button>
+      )}
     </Flex>
   );
 };

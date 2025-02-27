@@ -1,7 +1,6 @@
 import React from "react";
 import { useNavigate } from "react-router-dom";
 import { Button, Typography } from "antd";
-import { AddPostForm } from "../components/AddPostForm";
 
 const HomePage: React.FC = () => {
   const navigate = useNavigate();
@@ -12,8 +11,9 @@ const HomePage: React.FC = () => {
 
   return (
     <div className="content-box">
-      <Typography.Title level={3}>Добавление поста</Typography.Title>
-      <AddPostForm />
+      <Typography.Title level={3}>
+        Тут можно работать с постами
+      </Typography.Title>
       <Button type="primary" onClick={handleShowAllPosts}>
         Показать все посты
       </Button>
