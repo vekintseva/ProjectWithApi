@@ -1,14 +1,12 @@
 import React from "react";
 import { List, Typography } from "antd";
-import { useGetCommentsByPostIdQuery } from "../store/postsSlice";
+import { useGetCommentsByPostIdQuery } from "../store/commentsApiService";
 interface CommentsProps {
-  postId: number | null;
+  postId: number;
 }
 
 export const Comments: React.FC<CommentsProps> = ({ postId }) => {
-  const { data: comments } = useGetCommentsByPostIdQuery(postId!, {
-    skip: !postId,
-  });
+  const { data: comments } = useGetCommentsByPostIdQuery(postId);
 
   return (
     <>

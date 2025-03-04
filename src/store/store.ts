@@ -1,15 +1,12 @@
 import { configureStore } from "@reduxjs/toolkit";
-import { commentsApi, postsApi } from "./postsSlice";
+import { initialApiService } from "./initialApiService";
 
 export const store = configureStore({
   reducer: {
-    [postsApi.reducerPath]: postsApi.reducer,
-    [commentsApi.reducerPath]: commentsApi.reducer,
+    [initialApiService.reducerPath]: initialApiService.reducer,
   },
   middleware: (getDefaultMiddleware) =>
-    getDefaultMiddleware()
-      .concat(postsApi.middleware)
-      .concat(commentsApi.middleware),
+    getDefaultMiddleware().concat(initialApiService.middleware),
 });
 
 export type RootState = ReturnType<typeof store.getState>;

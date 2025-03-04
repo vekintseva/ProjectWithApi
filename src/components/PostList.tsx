@@ -3,24 +3,25 @@ import { Button, Flex, List } from "antd";
 import { PostDetail } from "./PostDetail";
 import { Post } from "../types/posts.types";
 import { AddPostForm } from "./AddPostForm";
-import { useGetPostsQuery } from "../store/postsSlice";
+import {
+  useAddPostMutation,
+  useDeletePostMutation,
+  useGetPostsQuery,
+} from "../store/postsApiService";
+
 export const PostList: React.FC = () => {
+  const { data: initialPosts = [] } = useGetPostsQuery();
+  const [addPost] = useAddPostMutation();
+  const [deletePost] = useDeletePostMutation();
+
   const [posts, setPosts] = useState<Post[]>([]);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedPost, setSelectedPost] = useState<Post | null>(null);
   const [isAddFormOpen, setIsAddFormOpen] = useState(false);
 
-  const { data } = useGetPostsQuery();
-
   useEffect(() => {
-    const storedPosts = localStorage.getItem("posts");
-    if (storedPosts) {
-      setPosts(JSON.parse(storedPosts));
-    } else if (data) {
-      setPosts(data);
-      localStorage.setItem("posts", JSON.stringify(data));
-    }
-  }, [data]);
+    setPosts(initialPosts);
+  }, [initialPosts]);
 
   const handleShowAddForm = () => {
     setIsAddFormOpen(true);
@@ -36,28 +37,27 @@ export const PostList: React.FC = () => {
     setSelectedPost(null);
   };
 
-  const handleDeletePost = (id: number) => {
-    setPosts(posts.filter((post) => post.id !== id));
-    localStorage.setItem(
-      "posts",
-      JSON.stringify(posts.filter((post) => post.id !== id))
-    );
-  };
-
-  const handleAddPost = (values: { title: string; body: string }) => {
-    const newPost: Post = {
-      id: posts.length + 1,
-      title: values.title,
-      body: values.body,
-    };
-    const updatedPosts = [...posts, newPost];
-    setPosts(updatedPosts);
-    localStorage.setItem("posts", JSON.stringify(updatedPosts));
-    setIsAddFormOpen(false);
-  };
-
   const handleCloseAddForm = () => {
     setIsAddFormOpen(false);
+  };
+
+  const handleAddPost = async (values: { title: string; body: string }) => {
+    try {
+      const newPost = await addPost(values).unwrap();
+      setPosts((prevPosts) => [...prevPosts, newPost]);
+      setIsAddFormOpen(false);
+    } catch (error) {
+      console.error(error);
+    }
+  };
+
+  const handleDeletePost = async (id: number) => {
+    try {
+      await deletePost(id).unwrap();
+      setPosts((prevPosts) => prevPosts.filter((post) => post.id !== id));
+    } catch (error) {
+      console.error(error);
+    }
   };
 
   return (
@@ -73,7 +73,7 @@ export const PostList: React.FC = () => {
             <List.Item
               actions={[
                 <Button danger onClick={() => handleDeletePost(post.id)}>
-                  Delete
+                  Удалить
                 </Button>,
                 <Button type="primary" onClick={() => handleOpenModal(post)}>
                   Подробнее

@@ -22,7 +22,7 @@ export const AddPostForm: React.FC<AddPostFormProps> = ({
 
   return (
     <Modal
-      visible={visible}
+      open={visible}
       onCancel={onClose}
       footer={null}
       title="Добавить пост"
