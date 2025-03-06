@@ -1,31 +1,12 @@
-import React, { useEffect, useState } from "react";
+import React from "react";
 import { List, Typography } from "antd";
-import axios from "axios";
-import { Comment } from "../types/comments.types";
-
+import { useGetCommentsByPostIdQuery } from "../store/commentsApiService";
 interface CommentsProps {
-  postId: number | null;
+  postId: number;
 }
 
 export const Comments: React.FC<CommentsProps> = ({ postId }) => {
-  const [comments, setComments] = useState<Comment[]>([]);
-
-  useEffect(() => {
-    if (!postId) return;
-
-    const fetchComments = async () => {
-      try {
-        const response = await axios.get<Comment[]>(
-          `https://jsonplaceholder.typicode.com/comments?postId=${postId}`
-        );
-        setComments(response.data);
-      } catch (error) {
-        console.error("Ошибка при загрузке комментариев:", error);
-      }
-    };
-
-    fetchComments();
-  }, [postId]);
+  const { data: comments } = useGetCommentsByPostIdQuery(postId);
 
   return (
     <>

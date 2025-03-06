@@ -1,28 +1,33 @@
 import React, { useEffect, useState } from "react";
-import { useDispatch, useSelector } from "react-redux";
-import { fetchPosts, deletePost } from "../store/postsSlice";
-import { AppDispatch, RootState } from "../store/store";
 import { Button, Flex, List } from "antd";
 import { PostDetail } from "./PostDetail";
-import { useNavigate } from "react-router-dom";
 import { Post } from "../types/posts.types";
+import { AddPostForm } from "./AddPostForm";
+import {
+  useAddPostMutation,
+  useDeletePostMutation,
+  useGetPostsQuery,
+} from "../store/postsApiService";
 
 export const PostList: React.FC = () => {
-  const dispatch = useDispatch<AppDispatch>();
-  const { posts } = useSelector((state: RootState) => state.posts);
+  const { data: initialPosts = [] } = useGetPostsQuery();
+  const [addPost] = useAddPostMutation();
+  const [deletePost] = useDeletePostMutation();
 
+  const [posts, setPosts] = useState<Post[]>([]);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedPost, setSelectedPost] = useState<Post | null>(null);
-  useEffect(() => {
-    dispatch(fetchPosts());
-  }, [dispatch]);
+  const [isAddFormOpen, setIsAddFormOpen] = useState(false);
 
-  const navigate = useNavigate();
+  useEffect(() => {
+    setPosts(initialPosts);
+  }, [initialPosts]);
+
   const handleShowAddForm = () => {
-    navigate("/");
+    setIsAddFormOpen(true);
   };
 
-  const handleOpenModal = async (post: Post) => {
+  const handleOpenModal = (post: Post) => {
     setSelectedPost(post);
     setIsModalOpen(true);
   };
@@ -30,6 +35,29 @@ export const PostList: React.FC = () => {
   const handleCloseModal = () => {
     setIsModalOpen(false);
     setSelectedPost(null);
+  };
+
+  const handleCloseAddForm = () => {
+    setIsAddFormOpen(false);
+  };
+
+  const handleAddPost = async (values: { title: string; body: string }) => {
+    try {
+      const newPost = await addPost(values).unwrap();
+      setPosts((prevPosts) => [...prevPosts, newPost]);
+      setIsAddFormOpen(false);
+    } catch (error) {
+      console.error(error);
+    }
+  };
+
+  const handleDeletePost = async (id: number) => {
+    try {
+      await deletePost(id).unwrap();
+      setPosts((prevPosts) => prevPosts.filter((post) => post.id !== id));
+    } catch (error) {
+      console.error(error);
+    }
   };
 
   return (
@@ -44,8 +72,8 @@ export const PostList: React.FC = () => {
           renderItem={(post) => (
             <List.Item
               actions={[
-                <Button danger onClick={() => dispatch(deletePost(post.id))}>
-                  Delete
+                <Button danger onClick={() => handleDeletePost(post.id)}>
+                  Удалить
                 </Button>,
                 <Button type="primary" onClick={() => handleOpenModal(post)}>
                   Подробнее
@@ -63,9 +91,18 @@ export const PostList: React.FC = () => {
           onClose={handleCloseModal}
         />
       </div>
-      <Button type="primary" onClick={handleShowAddForm}>
-        Вернуться к форме создания поста
-      </Button>
+      {isAddFormOpen && (
+        <AddPostForm
+          visible={isAddFormOpen}
+          onAddPost={handleAddPost}
+          onClose={handleCloseAddForm}
+        />
+      )}
+      {!isAddFormOpen && (
+        <Button type="primary" onClick={handleShowAddForm}>
+          Добавить пост
+        </Button>
+      )}
     </Flex>
   );
 };
